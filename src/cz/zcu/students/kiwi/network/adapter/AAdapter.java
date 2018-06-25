@@ -1,34 +1,26 @@
-package cz.zcu.students.kiwi.popApp.pop3.adapter;
+package cz.zcu.students.kiwi.network.adapter;
+
+import cz.zcu.students.kiwi.network.handling.ISignalHandler;
+import cz.zcu.students.kiwi.network.handling.Signal;
 
 import java.io.IOException;
-import java.util.logging.Logger;
+import java.net.UnknownHostException;
 
 public abstract class AAdapter {
-    protected static Logger log = Logger.getLogger(AAdapter.class.getSimpleName());
-
 
     private String hostname;
     private int port;
     private long lastActive;
+    private String hostString;
 
     private int invalidMessageCounter;
     private long latency;
 
-    protected ConnectionStatus status;
     private ISignalHandler signalHandler;
 
-    public AAdapter() {
-        this(signal -> log.warning("No signal handler set for: " + signal.getType()));
-    }
-
-    public AAdapter(ISignalHandler signalHandler) {
-        this.status = ConnectionStatus.Idle;
-    }
-
-    public void connectTo(String hostname, int port) {
+    public void connectTo(String hostname, int port) throws UnknownHostException {
         this.hostname = hostname;
         this.port = port;
-        this.status = ConnectionStatus.Connecting;
 
         this.invalidMessageCounter = 0;
     }
@@ -59,6 +51,10 @@ public abstract class AAdapter {
         return this.invalidMessageCounter;
     }
 
+    public final long getLastActive() {
+        return lastActive;
+    }
+
     public String getHostString() {
         if (!this.isOpen()) {
             return "N/A";
@@ -75,21 +71,11 @@ public abstract class AAdapter {
         this.latency = latency;
     }
 
-    public ConnectionStatus getStatus() {
-        return status;
-    }
-
-    public AAdapter setStatus(ConnectionStatus status) {
-        this.status = status;
-        return this;
+    public void setSignalHandler(ISignalHandler signalHandler) {
+        this.signalHandler = signalHandler;
     }
 
     protected abstract String receiveMsg() throws IOException;
-
-    public AAdapter setSignalHandler(ISignalHandler signalHandler) {
-        this.signalHandler = signalHandler;
-        return this;
-    }
 
     protected void signal(Signal signal) {
         this.signalHandler.signal(signal);
@@ -104,5 +90,12 @@ public abstract class AAdapter {
     }
 
 
+    public abstract boolean open();
+
     public abstract void close(String reason);
+
+    public boolean testServer(String address, int port) {
+        // todo: implement
+        return false;
+    }
 }

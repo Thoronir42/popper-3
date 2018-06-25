@@ -1,9 +1,9 @@
 package cz.zcu.students.kiwi.popApp.jfx.login;
 
+import cz.zcu.students.kiwi.network.Networks;
 import cz.zcu.students.kiwi.popApp.jfx.PopScene;
 import cz.zcu.students.kiwi.popApp.jfx.inputs.PortTextField;
-import cz.zcu.students.kiwi.popApp.pop3.adapter.tcp.TcpAdapter;
-import javafx.event.EventHandler;
+import javafx.application.Platform;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -12,36 +12,19 @@ import javafx.scene.layout.GridPane;
 
 public class LoginScene extends PopScene<GridPane> {
 
-    private EventHandler<OnConnectedEvent> onConnected;
+    private final Networks networks;
 
-    public LoginScene(double width, double height) {
+    public LoginScene(Networks networks, double width, double height) {
         super(new GridPane(), width, height);
-    }
-
-    public LoginScene setOnConnected(EventHandler<OnConnectedEvent> onConnected) {
-        this.onConnected = onConnected;
-        return this;
+        this.networks = networks;
     }
 
     protected void connect(String hostName, int port) {
         this.content.setDisable(true);
 
-        TcpAdapter adapter = new TcpAdapter();
-        adapter.setSignalHandler(signal -> {
-            System.out.println(signal.getType() + ", " + signal.getMessage());
-            switch (signal.getType()) {
-                case ConnectionEstablished:
-                    this.onConnected.handle(new OnConnectedEvent(adapter));
-                    break;
-                default:
-                    log.warning("Received unsuccessful signal: " + signal.getType());
-                    break;
-            }
+        networks.connectTo(hostName, port);
 
-            this.content.setDisable(false);
-        });
-
-        adapter.connectTo(hostName, port);
+        Platform.runLater(() -> this.content.setDisable(false));
     }
 
     @Override
@@ -69,7 +52,7 @@ public class LoginScene extends PopScene<GridPane> {
         Button submit = new Button("Login");
         submit.setOnAction(e -> {
             String text = hostNameField.getText();
-            if(text == null || text.length() == 0) {
+            if (text == null || text.length() == 0) {
                 text = hostNameField.getPromptText();
             }
 
