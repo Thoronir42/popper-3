@@ -1,6 +1,7 @@
 package cz.zcu.students.kiwi.popApp.jfx;
 
 import cz.zcu.students.kiwi.network.Networks;
+import cz.zcu.students.kiwi.network.adapter.socket.SslSocketFactory;
 import cz.zcu.students.kiwi.network.adapter.tcp.TcpAdapter;
 import cz.zcu.students.kiwi.network.adapter.tcp.TcpConnection;
 import cz.zcu.students.kiwi.network.codec.NoCodec;
@@ -25,6 +26,13 @@ public class PopApp extends Application implements INetworkProcessor {
 
     public PopApp() {
         super();
+
+        try {
+            TcpConnection.socketFactory = new SslSocketFactory(SslSocketFactory.createSslContext("PopAppKeystore", "popapp"));
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.exit(1);
+        }
 
         this.networks = new Networks(new TcpAdapter(), new NoCodec());
         this.networks.setHandler(this);
@@ -64,7 +72,7 @@ public class PopApp extends Application implements INetworkProcessor {
             return;
         }
 
-        System.out.println(signal.getType() + ", " + signal.getMessage());
+        log.info("Received signal: " + signal.getType() + ", " + signal.getMessage());
 
         switch (signal.getType()) {
             case ConnectionEstablished:
