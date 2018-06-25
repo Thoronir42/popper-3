@@ -1,12 +1,15 @@
 package cz.zcu.students.kiwi.popApp.pop3;
 
-public class Session {
+import cz.zcu.students.kiwi.popApp.pop3.adapter.AAdapter;
 
-    public Session(String address, int port) {
-    }
+public final class Session {
 
-    public boolean open() {
-        return true;
+    private final AAdapter adapter;
+    private State state;
+
+    public Session(AAdapter adapter) {
+        this.adapter = adapter;
+        this.state = State.Authorization;
     }
 
     enum State {

@@ -34,9 +34,11 @@ public class LoginScene extends PopScene<GridPane> {
                     this.onConnected.handle(new OnConnectedEvent(adapter));
                     break;
                 default:
-                    this.content.setDisable(false);
-
+                    log.warning("Received unsuccessful signal: " + signal.getType());
+                    break;
             }
+
+            this.content.setDisable(false);
         });
 
         adapter.connectTo(hostName, port);
@@ -52,6 +54,7 @@ public class LoginScene extends PopScene<GridPane> {
         TextField hostNameField = new TextField();
         Label hostNameLabel = new Label("Hostname:");
         hostNameLabel.setOnMouseClicked(e -> hostNameField.requestFocus());
+        hostNameField.setPromptText("pop.zcu.cz");
 
         pane.add(hostNameLabel, 0, 0);
         pane.add(hostNameField, 1, 0);
@@ -64,7 +67,14 @@ public class LoginScene extends PopScene<GridPane> {
         pane.add(portField, 1, 1);
 
         Button submit = new Button("Login");
-        submit.setOnAction(e -> this.connect(hostNameField.getText(), portField.getPort()));
+        submit.setOnAction(e -> {
+            String text = hostNameField.getText();
+            if(text == null || text.length() == 0) {
+                text = hostNameField.getPromptText();
+            }
+
+            this.connect(text, portField.getPort());
+        });
         submit.setAlignment(Pos.CENTER);
 
         pane.add(submit, 0, 2, 2, 1);
