@@ -24,6 +24,10 @@ public class Response {
         return lines[line];
     }
 
+    public int lineCount() {
+        return lines.length;
+    }
+
     public String getRaw() {
         return raw;
     }

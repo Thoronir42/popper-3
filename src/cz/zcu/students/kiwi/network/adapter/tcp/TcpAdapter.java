@@ -1,7 +1,9 @@
 package cz.zcu.students.kiwi.network.adapter.tcp;
 
 import cz.zcu.students.kiwi.network.adapter.AAdapter;
+import cz.zcu.students.kiwi.network.adapter.socket.SocketFactory;
 import cz.zcu.students.kiwi.network.handling.Signal;
+import cz.zcu.students.kiwi.popApp.pop3.Response;
 
 import java.io.IOException;
 import java.net.NoRouteToHostException;
@@ -19,9 +21,9 @@ public class TcpAdapter extends AAdapter {
     private int timeout = 5000;
 
     @Override
-    public void connectTo(String hostname, int port) throws UnknownHostException {
-        super.connectTo(hostname, port);
-        this.connection = new TcpConnection(hostname, port);
+    public void connectTo(String hostname, int port, SocketFactory socketFactory) throws UnknownHostException {
+        super.connectTo(hostname, port, socketFactory);
+        this.connection = new TcpConnection(socketFactory, hostname, port);
     }
 
     @Override
@@ -34,14 +36,21 @@ public class TcpAdapter extends AAdapter {
         StringBuilder message = new StringBuilder();
 
         String line;
-
+        int lines = 0;
         do {
-            line = this.connection.receive();
+            line = this.connection.receiveLine();
+            lines++;
+
             if (line == null || line.length() == 0) {
                 throw new IOException("TcpConnection reset");
             }
-            log.info("line: " + message);
+
+            log.info("line: " + line +  "// (" + line.length() + ")");
             message.append(line).append("\n");
+            if (lines == 1 && (line.equals(Response.Status.Ok.protocolRepresentation()) || line.equals(Response.Status.Err
+                    .protocolRepresentation()))) {
+                break;
+            }
         } while (line.charAt(line.length() - 1) != '.');
 
         log.info("message: " + message);

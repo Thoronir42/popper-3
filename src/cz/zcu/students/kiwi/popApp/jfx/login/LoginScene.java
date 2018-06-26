@@ -6,6 +6,7 @@ import cz.zcu.students.kiwi.popApp.jfx.inputs.PortTextField;
 import javafx.application.Platform;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
@@ -19,10 +20,10 @@ public class LoginScene extends PopScene<GridPane> {
         this.networks = networks;
     }
 
-    protected void connect(String hostName, int port) {
+    protected void connect(String hostName, int port, boolean secure) {
         this.content.setDisable(true);
 
-        networks.connectTo(hostName, port);
+        networks.connectTo(hostName, port, secure);
 
         Platform.runLater(() -> this.content.setDisable(false));
     }
@@ -43,11 +44,18 @@ public class LoginScene extends PopScene<GridPane> {
         pane.add(hostNameField, 1, 0);
 
         Label portLabel = new Label("Port:");
-        PortTextField portField = new PortTextField(110);
+        PortTextField portField = new PortTextField();
+        portField.setPromptText("110");
         portLabel.setOnMouseClicked(e -> portField.requestFocus());
 
         pane.add(portLabel, 0, 1);
         pane.add(portField, 1, 1);
+
+        CheckBox checkBoxUseSecureConnection = new CheckBox("Use SSL");
+        checkBoxUseSecureConnection.selectedProperty().addListener((o, oldVal, newVal) -> {
+            portField.setPromptText(newVal ? "995" : "110");
+        });
+        pane.add(checkBoxUseSecureConnection, 0, 2, 2, 1);
 
         Button submit = new Button("Login");
         submit.setOnAction(e -> {
@@ -56,10 +64,10 @@ public class LoginScene extends PopScene<GridPane> {
                 text = hostNameField.getPromptText();
             }
 
-            this.connect(text, portField.getPort());
+            this.connect(text, portField.getPort(true), checkBoxUseSecureConnection.isSelected());
         });
         submit.setAlignment(Pos.CENTER);
 
-        pane.add(submit, 0, 2, 2, 1);
+        pane.add(submit, 0, 3, 2, 1);
     }
 }

@@ -2,6 +2,8 @@ package cz.zcu.students.kiwi.network;
 
 import cz.zcu.students.kiwi.network.adapter.AAdapter;
 import cz.zcu.students.kiwi.network.adapter.ConnectionStatus;
+import cz.zcu.students.kiwi.network.adapter.socket.SocketFactory;
+import cz.zcu.students.kiwi.network.adapter.socket.SslSocketFactory;
 import cz.zcu.students.kiwi.network.codec.ICodec;
 import cz.zcu.students.kiwi.network.handling.INetworkProcessor;
 import cz.zcu.students.kiwi.network.handling.ISignalHandler;
@@ -15,6 +17,9 @@ import java.util.logging.Logger;
 public final class Networks extends Thread implements ISignalHandler {
     private static final Logger log = Logger.getLogger(Networks.class.getSimpleName());
 
+    private final SocketFactory socketFactory;
+    private final SslSocketFactory secureSocketFactory;
+
     private final AAdapter adapter;
     private final ICodec codec;
 
@@ -25,6 +30,9 @@ public final class Networks extends Thread implements ISignalHandler {
 
     public Networks(AAdapter adapter, ICodec codec) {
         super(Networks.class.getSimpleName());
+
+        this.socketFactory = new SocketFactory();
+        this.secureSocketFactory = new SslSocketFactory();
 
         this.adapter = adapter;
         this.status = ConnectionStatus.Idle;
@@ -44,13 +52,17 @@ public final class Networks extends Thread implements ISignalHandler {
         return this;
     }
 
+    public boolean connectTo(String hostname, int port) {
+        return this.connectTo(hostname, port, false);
+    }
+
     /**
      * Non-blocking Schedules connection creation.
      */
-    public boolean connectTo(String hostname, int port) {
+    public boolean connectTo(String hostname, int port, boolean secure) {
         try {
             log.info("Creating connection to " + hostname + ":" + port);
-            this.adapter.connectTo(hostname, port);
+            this.adapter.connectTo(hostname, port, secure ? this.secureSocketFactory : this.socketFactory);
             this.setStatus(ConnectionStatus.Connecting);
             return true;
         } catch (UnknownHostException e) {
@@ -94,7 +106,7 @@ public final class Networks extends Thread implements ISignalHandler {
                     continue;
                 }
                 if (status == ConnectionStatus.Connecting) {
-                    log.info("Opening connection");
+                    log.info("Opening connection to: " + adapter.getHostString());
                     adapter.open();
                     log.fine("Connection opened");
                     continue;

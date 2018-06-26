@@ -11,16 +11,20 @@ public class SslSocketFactory extends SocketFactory {
 
     private final SSLContext sc;
 
+    public SslSocketFactory() {
+        this.sc = null;
+    }
+
     public SslSocketFactory(SSLContext sc) {
         this.sc = sc;
     }
 
     @Override
     public SSLSocket create(SocketAddress server, int timeout) throws IOException {
-        SSLSocketFactory ssf = sc.getSocketFactory();
+        SSLSocketFactory ssf = sc == null ? (SSLSocketFactory) SSLSocketFactory.getDefault() : sc.getSocketFactory();
         SSLSocket s = (SSLSocket) ssf.createSocket();
         s.connect(server, timeout);
-//        s.startHandshake();
+        s.startHandshake();
 
         return s;
     }

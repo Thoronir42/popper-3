@@ -1,7 +1,9 @@
 package cz.zcu.students.kiwi.popApp.jfx;
 
 import cz.zcu.students.kiwi.network.Networks;
+import cz.zcu.students.kiwi.network.adapter.socket.SslSocketFactory;
 import cz.zcu.students.kiwi.network.adapter.tcp.TcpAdapter;
+import cz.zcu.students.kiwi.network.adapter.tcp.TcpConnection;
 import cz.zcu.students.kiwi.network.codec.NoCodec;
 import cz.zcu.students.kiwi.network.handling.INetworkProcessor;
 import cz.zcu.students.kiwi.network.handling.Signal;
@@ -13,10 +15,10 @@ import cz.zcu.students.kiwi.popApp.pop3.Session;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.geometry.Rectangle2D;
-import javafx.scene.Scene;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
 
+import java.util.Arrays;
 import java.util.logging.Logger;
 
 public class PopApp extends Application implements INetworkProcessor {
@@ -33,13 +35,6 @@ public class PopApp extends Application implements INetworkProcessor {
 
     public PopApp() {
         super();
-
-        /*try {
-            TcpConnection.socketFactory = new SslSocketFactory(SslSocketFactory.createSslContext("PopAppKeystore", "popapp"));
-        } catch (Exception e) {
-            e.printStackTrace();
-            System.exit(1);
-        }*/
 
         this.parser = new ResponseParser();
 
@@ -70,9 +65,6 @@ public class PopApp extends Application implements INetworkProcessor {
     @Override
     public boolean handle(String message) {
         Response response = this.parser.parse(message);
-
-        System.out.println(response.getRaw());
-        System.out.println(response.getStatus() + ", " + response.line(0));
 
         // fixme: woah, what an ugly synchronization solution >:O
         while (this.runtimeScene == null) {

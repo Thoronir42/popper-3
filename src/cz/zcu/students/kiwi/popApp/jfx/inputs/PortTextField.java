@@ -1,7 +1,6 @@
 package cz.zcu.students.kiwi.popApp.jfx.inputs;
 
 import javafx.beans.property.SimpleIntegerProperty;
-import javafx.beans.value.ObservableValue;
 import javafx.scene.control.TextField;
 
 public class PortTextField extends TextField {
@@ -15,20 +14,33 @@ public class PortTextField extends TextField {
 	}
 
 	public int getPort() {
-		return this.Port.get();
+		return this.getPort(false);
+	}
+
+    public int getPort(boolean tryPrompt) {
+        int i = this.Port.get();
+        if (i == -1 && tryPrompt) {
+            i = Integer.parseInt(this.getPromptText());
+            System.out.println(i);
+        }
+        return i;
+	}
+
+	public PortTextField() {
+		this.Port = createPortProperty();
 	}
 
 	public PortTextField(int serverPort) {
-		this.Port = createPortProperty();
+		this();
 		this.Port.set(serverPort);
 
-		this.textProperty().addListener((ObservableValue<? extends String> observable, String oldValue, String newValue) -> {
+		this.textProperty().addListener((observable, oldValue, newValue) -> {
 			if (!newValue.matches("\\d*")) {
 				setText(newValue.replaceAll("[^\\d]", ""));
 				return;
 			}
 			if (newValue.length() < 1) {
-				setText(MIN_PORT + "");
+				Port.set(-1);
 				return;
 			}
 
@@ -43,18 +55,23 @@ public class PortTextField extends TextField {
 	}
 
 	private SimpleIntegerProperty createPortProperty() {
-		SimpleIntegerProperty port = new SimpleIntegerProperty();
+		SimpleIntegerProperty port = new SimpleIntegerProperty(-1);
 
-		port.addListener((ObservableValue<? extends Number> observable, Number oldValue, Number newValue) -> {
-			if (newValue.intValue() > MAX_PORT) {
+		port.addListener((observable, oldValue, newValue) -> {
+            int newInt = newValue.intValue();
+            if(newInt == -1) {
+                return;
+            }
+
+		    if (newInt > MAX_PORT) {
 				port.set(MAX_PORT);
 				return;
 			}
-			if (newValue.intValue() < MIN_PORT) {
+			if (newInt < MIN_PORT) {
 				port.set((oldValue.intValue() < MIN_PORT) ? MIN_PORT : oldValue.intValue());
 				return;
 			}
-			setText(newValue.intValue() + "");
+			setText(newInt + "");
 		});
 
 		return port;

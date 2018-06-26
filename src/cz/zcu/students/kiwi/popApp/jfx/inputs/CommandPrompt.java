@@ -40,13 +40,18 @@ public class CommandPrompt extends HBox {
 
             String[] inputParts = raw.split(" ");
             String[] arguments = Arrays.copyOfRange(inputParts, 1, inputParts.length);
-            Command command = new Command(Command.Type.valueOf(inputParts[0].toUpperCase()), arguments);
+            try {
+                Command.Type type = Command.Type.valueOf(inputParts[0].toUpperCase());
+                Command command = new Command(type, arguments);
 
-            OnCommandEvent event = new OnCommandEvent(command);
-            event.setRaw(raw);
+                OnCommandEvent event = new OnCommandEvent(command);
+                event.setRaw(raw);
 
-            onCommand.handle(event);
-            textInput.setText("");
+                onCommand.handle(event);
+                textInput.setText("");
+            } catch (IllegalArgumentException e) {
+                System.err.println(e.toString());
+            }
         }
     }
 

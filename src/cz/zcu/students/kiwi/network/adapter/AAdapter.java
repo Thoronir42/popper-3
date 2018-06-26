@@ -1,5 +1,6 @@
 package cz.zcu.students.kiwi.network.adapter;
 
+import cz.zcu.students.kiwi.network.adapter.socket.SocketFactory;
 import cz.zcu.students.kiwi.network.handling.ISignalHandler;
 import cz.zcu.students.kiwi.network.handling.Signal;
 
@@ -17,10 +18,12 @@ public abstract class AAdapter {
     private long latency;
 
     private ISignalHandler signalHandler;
+    private SocketFactory socketFactory;
 
-    public void connectTo(String hostname, int port) throws UnknownHostException {
+    public void connectTo(String hostname, int port, SocketFactory factory) throws UnknownHostException {
         this.hostname = hostname;
         this.port = port;
+        this.socketFactory = factory;
 
         this.invalidMessageCounter = 0;
     }
@@ -56,10 +59,6 @@ public abstract class AAdapter {
     }
 
     public String getHostString() {
-        if (!this.isOpen()) {
-            return "N/A";
-        }
-
         return hostname + ":" + port;
     }
 
