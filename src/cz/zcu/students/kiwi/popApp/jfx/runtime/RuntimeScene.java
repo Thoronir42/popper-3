@@ -3,6 +3,7 @@ package cz.zcu.students.kiwi.popApp.jfx.runtime;
 import cz.zcu.students.kiwi.popApp.jfx.PopScene;
 import cz.zcu.students.kiwi.popApp.jfx.components.CommandHintTab;
 import cz.zcu.students.kiwi.popApp.jfx.inputs.CommandPrompt;
+import cz.zcu.students.kiwi.popApp.pop3.Response;
 import cz.zcu.students.kiwi.popApp.pop3.Session;
 import javafx.application.Platform;
 import javafx.beans.binding.DoubleBinding;
@@ -26,12 +27,24 @@ public class RuntimeScene extends PopScene<BorderPane> {
 //        this.textAreaLog.setEditable(false);
     }
 
+    public void pushMessage(Response response) {
+        System.out.println(response.getRaw());
+        append("S", response.getRaw());
+    }
+
+    protected void append(String author, String content) {
+        String text = textAreaLog.getText();
+
+        text += "\n" + author + ": " + content;
+
+        textAreaLog.setText(text);
+    }
+
     @Override
     protected void build(BorderPane root) {
         this.commandPrompt = new CommandPrompt();
         commandPrompt.setOnCommand(event -> {
-            System.out.println(event.getCommand());
-            System.out.println(event.getArguments().length);
+            append("C", event.getRaw());
         });
 
         root.setBottom(commandPrompt);

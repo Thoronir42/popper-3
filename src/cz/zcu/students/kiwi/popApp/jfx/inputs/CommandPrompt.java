@@ -35,10 +35,14 @@ public class CommandPrompt extends HBox {
 
     private void submit() {
         if (onCommand != null) {
-            String[] inputParts = textInput.getText().split(" ");
+            String raw = textInput.getText();
+
+            String[] inputParts = raw.split(" ");
             String[] arguments = Arrays.copyOfRange(inputParts, 1, inputParts.length);
 
-            onCommand.handle(new OnCommandEvent(inputParts[0], arguments));
+            OnCommandEvent event = new OnCommandEvent(inputParts[0], arguments);
+            event.setRaw(raw);
+            onCommand.handle(event);
             textInput.setText("");
         }
     }

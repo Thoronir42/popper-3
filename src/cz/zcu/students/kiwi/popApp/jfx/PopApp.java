@@ -1,17 +1,20 @@
 package cz.zcu.students.kiwi.popApp.jfx;
 
 import cz.zcu.students.kiwi.network.Networks;
-import cz.zcu.students.kiwi.network.adapter.socket.SslSocketFactory;
 import cz.zcu.students.kiwi.network.adapter.tcp.TcpAdapter;
-import cz.zcu.students.kiwi.network.adapter.tcp.TcpConnection;
 import cz.zcu.students.kiwi.network.codec.NoCodec;
 import cz.zcu.students.kiwi.network.handling.INetworkProcessor;
 import cz.zcu.students.kiwi.network.handling.Signal;
 import cz.zcu.students.kiwi.popApp.jfx.login.LoginScene;
 import cz.zcu.students.kiwi.popApp.jfx.runtime.RuntimeScene;
+import cz.zcu.students.kiwi.popApp.pop3.Response;
+import cz.zcu.students.kiwi.popApp.pop3.ResponseParser;
 import cz.zcu.students.kiwi.popApp.pop3.Session;
 import javafx.application.Application;
 import javafx.application.Platform;
+import javafx.geometry.Rectangle2D;
+import javafx.scene.Scene;
+import javafx.stage.Screen;
 import javafx.stage.Stage;
 
 import java.util.logging.Logger;
@@ -21,18 +24,24 @@ public class PopApp extends Application implements INetworkProcessor {
     private static Logger log = Logger.getLogger(Application.class.getSimpleName());
 
     private final Networks networks;
+
+    ResponseParser parser;
+
     private Stage primaryStage;
     private LoginScene loginScene;
+    private RuntimeScene runtimeScene;
 
     public PopApp() {
         super();
 
-        try {
+        /*try {
             TcpConnection.socketFactory = new SslSocketFactory(SslSocketFactory.createSslContext("PopAppKeystore", "popapp"));
         } catch (Exception e) {
             e.printStackTrace();
             System.exit(1);
-        }
+        }*/
+
+        this.parser = new ResponseParser();
 
         this.networks = new Networks(new TcpAdapter(), new NoCodec());
         this.networks.setHandler(this);
@@ -60,7 +69,20 @@ public class PopApp extends Application implements INetworkProcessor {
 
     @Override
     public boolean handle(String message) {
-        System.out.println(message);
+        Response response = this.parser.parse(message);
+
+        System.out.println(response.getRaw());
+        System.out.println(response.getStatus() + ", " + response.line(0));
+
+        // fixme: woah, what an ugly synchronization solution >:O
+        while (this.runtimeScene == null) {
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+            }
+        }
+
+        this.runtimeScene.pushMessage(response);
 
         return true;
     }
@@ -77,15 +99,27 @@ public class PopApp extends Application implements INetworkProcessor {
         switch (signal.getType()) {
             case ConnectionEstablished:
                 Session session = new Session(networks);
-                RuntimeScene newScene = new RuntimeScene(session, 1280, 960);
-                primaryStage.setScene(newScene);
+                this.runtimeScene = new RuntimeScene(session, 1280, 960);
+                primaryStage.setScene(this.runtimeScene);
+                Platform.runLater(this::centerStage);
                 break;
             case ConnectionReset:
                 primaryStage.setScene(this.loginScene);
+                Platform.runLater(this::centerStage);
                 break;
 
         }
 
+    }
+
+    private void centerStage() {
+        Rectangle2D bounds = Screen.getPrimary().getVisualBounds();
+
+        double centerX = bounds.getMinX() + (bounds.getWidth() - primaryStage.getWidth()) * 0.5f;
+        double centerY = bounds.getMinY() + (bounds.getHeight() - primaryStage.getHeight()) * 1f / 3;
+
+        primaryStage.setX(centerX);
+        primaryStage.setY(centerY);
     }
 
 
