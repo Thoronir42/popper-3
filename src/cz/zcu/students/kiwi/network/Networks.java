@@ -6,6 +6,7 @@ import cz.zcu.students.kiwi.network.codec.ICodec;
 import cz.zcu.students.kiwi.network.handling.INetworkProcessor;
 import cz.zcu.students.kiwi.network.handling.ISignalHandler;
 import cz.zcu.students.kiwi.network.handling.Signal;
+import cz.zcu.students.kiwi.popApp.pop3.Command;
 
 import java.io.IOException;
 import java.net.UnknownHostException;
@@ -58,14 +59,19 @@ public final class Networks extends Thread implements ISignalHandler {
         }
     }
 
-    public boolean send(String message) {
+    public boolean send(Command command) {
         if (!this.adapter.isOpen()) {
             log.warning("Attempted to send a command while connection is not open.");
             return false;
         }
 
+        String message = command.getType().name();
+        if (command.hasArgs()) {
+            message += " " + String.join(" ", command.getArgs());
+        }
+
         try {
-            log.fine("Sending command " + message);
+            log.fine("Sending command '" + message + "'");
             message = this.codec.encode(message);
             this.adapter.send(message);
 

@@ -2,7 +2,24 @@ package cz.zcu.students.kiwi.popApp.pop3;
 
 public class Command {
 
+    private final Type type;
+    private final String[] args;
+
     public Command(Type type, String... args) {
+        this.type = type;
+        this.args = args;
+    }
+
+    public Type getType() {
+        return type;
+    }
+
+    public String[] getArgs() {
+        return args;
+    }
+
+    public boolean hasArgs() {
+        return this.args.length > 0;
     }
 
     public enum Type {

@@ -1,5 +1,6 @@
 package cz.zcu.students.kiwi.popApp.jfx.inputs;
 
+import cz.zcu.students.kiwi.popApp.pop3.Command;
 import javafx.event.EventHandler;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
@@ -39,9 +40,11 @@ public class CommandPrompt extends HBox {
 
             String[] inputParts = raw.split(" ");
             String[] arguments = Arrays.copyOfRange(inputParts, 1, inputParts.length);
+            Command command = new Command(Command.Type.valueOf(inputParts[0].toUpperCase()), arguments);
 
-            OnCommandEvent event = new OnCommandEvent(inputParts[0], arguments);
+            OnCommandEvent event = new OnCommandEvent(command);
             event.setRaw(raw);
+
             onCommand.handle(event);
             textInput.setText("");
         }

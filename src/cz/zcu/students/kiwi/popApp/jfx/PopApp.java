@@ -79,6 +79,7 @@ public class PopApp extends Application implements INetworkProcessor {
             try {
                 Thread.sleep(100);
             } catch (InterruptedException e) {
+                break;
             }
         }
 

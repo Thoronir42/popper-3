@@ -1,21 +1,20 @@
 package cz.zcu.students.kiwi.popApp.jfx.inputs;
 
+import cz.zcu.students.kiwi.popApp.pop3.Command;
 import javafx.event.Event;
 import javafx.event.EventType;
 
 public class OnCommandEvent extends Event {
     private static final EventType<OnCommandEvent> type = new EventType<>("onCommand");
 
-    private final String command;
-    private final String[] arguments;
+    private final Command command;
 
     private String raw;
 
 
-    public OnCommandEvent(String command, String ...arguments) {
+    public OnCommandEvent(Command command) {
         super(type);
         this.command = command;
-        this.arguments = arguments;
     }
 
     public String getRaw() {
@@ -27,11 +26,7 @@ public class OnCommandEvent extends Event {
         return this;
     }
 
-    public String getCommand() {
+    public Command getCommand() {
         return command;
-    }
-
-    public String[] getArguments() {
-        return arguments;
     }
 }

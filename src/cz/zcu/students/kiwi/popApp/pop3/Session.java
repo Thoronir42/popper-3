@@ -12,6 +12,10 @@ public final class Session {
         this.state = State.Authorization;
     }
 
+    public void issue(Command command) {
+        networks.send(command);
+    }
+
     enum State {
         Authorization, Transaction, Update, Optional
     }

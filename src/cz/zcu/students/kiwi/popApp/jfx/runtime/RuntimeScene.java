@@ -1,18 +1,19 @@
 package cz.zcu.students.kiwi.popApp.jfx.runtime;
 
 import cz.zcu.students.kiwi.popApp.jfx.PopScene;
-import cz.zcu.students.kiwi.popApp.jfx.components.CommandHintTab;
+import cz.zcu.students.kiwi.popApp.jfx.components.CommandBox;
 import cz.zcu.students.kiwi.popApp.jfx.inputs.CommandPrompt;
 import cz.zcu.students.kiwi.popApp.pop3.Response;
 import cz.zcu.students.kiwi.popApp.pop3.Session;
 import javafx.application.Platform;
 import javafx.beans.binding.DoubleBinding;
 import javafx.collections.ObservableList;
+import javafx.geometry.Insets;
 import javafx.scene.Node;
-import javafx.scene.control.Tab;
-import javafx.scene.control.TabPane;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextArea;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.VBox;
 
 public class RuntimeScene extends PopScene<BorderPane> {
 
@@ -44,6 +45,7 @@ public class RuntimeScene extends PopScene<BorderPane> {
     protected void build(BorderPane root) {
         this.commandPrompt = new CommandPrompt();
         commandPrompt.setOnCommand(event -> {
+            session.issue(event.getCommand());
             append("C", event.getRaw());
         });
 
@@ -59,43 +61,46 @@ public class RuntimeScene extends PopScene<BorderPane> {
 
         root.prefWidthProperty().bind(this.widthProperty());
 
-        TabPane hintTabs = buildHintTabs();
-        hintTabs.prefWidthProperty().bind(root.widthProperty().multiply(0.3));
-        root.setLeft(hintTabs);
+        ScrollPane commandHints = buildHintTabs();
+        commandHints.prefWidthProperty().bind(root.widthProperty().multiply(0.3));
+        root.setLeft(commandHints);
 
         this.textAreaLog = new TextArea();
         this.textAreaLog.setEditable(false);
-        DoubleBinding width = root.widthProperty().add(hintTabs.widthProperty().multiply(-1));
+        DoubleBinding width = root.widthProperty().add(commandHints.widthProperty().multiply(-1));
         this.textAreaLog.prefWidthProperty().bind(width);
         root.setRight(this.textAreaLog);
 
         return root;
     }
 
-    private TabPane buildHintTabs() {
-        TabPane stateTabs = new TabPane();
+    private ScrollPane buildHintTabs() {
+        ScrollPane pane = new ScrollPane();
+        VBox commandGroups = new VBox();
 
-        ObservableList<Tab> tabs = stateTabs.getTabs();
+        ObservableList<Node> groupList = commandGroups.getChildren();
 
-        tabs.add(buildTabAuthentication());
-        tabs.add(buildTabTransaction());
-        tabs.add(buildTabOptional());
+        groupList.add(buildTabAuthentication());
+        groupList.add(buildTabTransaction());
+        groupList.add(buildTabOptional());
 
-        tabs.forEach(tab -> {
-            tab.setClosable(false);
-            tab.setStyle("background: #AAA");
-            if (tab instanceof CommandHintTab) {
-                ((CommandHintTab) tab).setOnSelected(cmd -> this.selectCommand(cmd.getCommand()));
+        groupList.forEach(item -> {
+            if (item instanceof CommandBox) {
+                ((CommandBox) item).setOnSelected(cmd -> this.selectCommand(cmd.getCommand()));
                 Platform.runLater(commandPrompt::requestFocus);
+                ((CommandBox) item).setPadding(new Insets(6));
             }
+
         });
 
-        return stateTabs;
+        pane.setContent(commandGroups);
+
+        return pane;
     }
 
-    private CommandHintTab buildTabAuthentication() {
+    private CommandBox buildTabAuthentication() {
 
-        CommandHintTab tab = new CommandHintTab("Authentication");
+        CommandBox tab = new CommandBox("Authentication");
 
         tab.addCommand("USER");
         tab.addCommand("PASS");
@@ -104,8 +109,8 @@ public class RuntimeScene extends PopScene<BorderPane> {
         return tab;
     }
 
-    private CommandHintTab buildTabTransaction() {
-        CommandHintTab tab = new CommandHintTab("Transaction");
+    private CommandBox buildTabTransaction() {
+        CommandBox tab = new CommandBox("Transaction");
 
         tab.addCommand("STAT");
         tab.addCommand("LIST");
@@ -117,8 +122,8 @@ public class RuntimeScene extends PopScene<BorderPane> {
         return tab;
     }
 
-    private CommandHintTab buildTabOptional() {
-        CommandHintTab tab = new CommandHintTab("Optional");
+    private CommandBox buildTabOptional() {
+        CommandBox tab = new CommandBox("Optional");
 
         tab.addCommand("TOP");
         tab.addCommand("UIDL");
