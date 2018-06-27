@@ -22,27 +22,62 @@ public class Command {
         return this.args.length > 0;
     }
 
-    public enum Type {
-        QUIT(Session.State.Authorization),
-        STAT(Session.State.Transaction),
-        LIST(Session.State.Transaction),
-        RETR(Session.State.Transaction),
-        DELE(Session.State.Transaction),
-        NOOP(Session.State.Transaction),
-        RSET(Session.State.Transaction),
+    public boolean expectsMultiLineResponse() {
+        switch (this.type.respType) {
+            case SingleLine:
+                return false;
 
-        TOP(Session.State.Optional),
-        UIDL(Session.State.Optional),
-        USER(Session.State.Optional),
-        PASS(Session.State.Optional),
-        APOP(Session.State.Optional),;
+            case MultiLine:
+                return true;
 
+            case SingleIfArgs:
+                return !this.hasArgs();
 
-        Session.State state;
-
-        Type(Session.State state) {
-
+            case MultiIfArgs:
+                return this.hasArgs();
         }
+
+        throw new IllegalStateException("Unrecognized respType: " + this.type.respType);
+    }
+
+    @Override
+    public String toString() {
+        return this.type.name() + (this.hasArgs() ? " " + String.join(" ", this.args) : "");
+    }
+
+    public enum Type {
+        QUIT,
+        STAT,
+        LIST(ResponseType.SingleIfArgs),
+        RETR(ResponseType.MultiLine),
+        DELE,
+        NOOP,
+        RSET,
+
+        TOP(ResponseType.MultiLine),
+        UIDL(ResponseType.SingleIfArgs),
+        USER,
+        PASS,
+        APOP,;
+
+
+        private final ResponseType respType;
+
+        Type() {
+            this(ResponseType.SingleLine);
+        }
+
+        Type(ResponseType respType) {
+            this.respType = respType;
+        }
+
+    }
+
+    private enum ResponseType {
+        SingleLine,
+        MultiLine,
+        SingleIfArgs,
+        MultiIfArgs
     }
 
 

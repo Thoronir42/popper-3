@@ -1,21 +1,21 @@
-package cz.zcu.students.kiwi.network;
+package cz.zcu.students.kiwi.popApp.network;
 
-import cz.zcu.students.kiwi.network.adapter.AAdapter;
-import cz.zcu.students.kiwi.network.adapter.ConnectionStatus;
-import cz.zcu.students.kiwi.network.adapter.socket.SocketFactory;
-import cz.zcu.students.kiwi.network.adapter.socket.SslSocketFactory;
-import cz.zcu.students.kiwi.network.codec.ICodec;
-import cz.zcu.students.kiwi.network.handling.INetworkProcessor;
-import cz.zcu.students.kiwi.network.handling.ISignalHandler;
-import cz.zcu.students.kiwi.network.handling.Signal;
+import cz.zcu.students.kiwi.popApp.network.adapter.AAdapter;
+import cz.zcu.students.kiwi.popApp.network.adapter.ConnectionStatus;
+import cz.zcu.students.kiwi.popApp.network.adapter.socket.SocketFactory;
+import cz.zcu.students.kiwi.popApp.network.adapter.socket.SslSocketFactory;
+import cz.zcu.students.kiwi.popApp.network.codec.ICodec;
+import cz.zcu.students.kiwi.popApp.network.handling.ISignalHandler;
+import cz.zcu.students.kiwi.popApp.network.handling.Signal;
 import cz.zcu.students.kiwi.popApp.pop3.Command;
+import cz.zcu.students.kiwi.popApp.pop3.Response;
 
 import java.io.IOException;
 import java.net.UnknownHostException;
 import java.util.logging.Logger;
 
-public final class Networks extends Thread implements ISignalHandler {
-    private static final Logger log = Logger.getLogger(Networks.class.getSimpleName());
+public final class NetworksSynchronous extends Thread implements ISignalHandler {
+    private static final Logger log = Logger.getLogger(NetworksSynchronous.class.getSimpleName());
 
     private final SocketFactory socketFactory;
     private final SslSocketFactory secureSocketFactory;
@@ -25,11 +25,11 @@ public final class Networks extends Thread implements ISignalHandler {
 
     private ConnectionStatus status;
 
-    private INetworkProcessor handler;
+    private ISignalHandler handler;
     private boolean keepRunning;
 
-    public Networks(AAdapter adapter, ICodec codec) {
-        super(Networks.class.getSimpleName());
+    public NetworksSynchronous(AAdapter adapter, ICodec codec) {
+        super(NetworksSynchronous.class.getSimpleName());
 
         this.socketFactory = new SocketFactory();
         this.secureSocketFactory = new SslSocketFactory();
@@ -47,7 +47,7 @@ public final class Networks extends Thread implements ISignalHandler {
         return status;
     }
 
-    public Networks setStatus(ConnectionStatus status) {
+    public NetworksSynchronous setStatus(ConnectionStatus status) {
         this.status = status;
         return this;
     }
@@ -64,6 +64,8 @@ public final class Networks extends Thread implements ISignalHandler {
             log.info("Creating connection to " + hostname + ":" + port);
             this.adapter.connectTo(hostname, port, secure ? this.secureSocketFactory : this.socketFactory);
             this.setStatus(ConnectionStatus.Connecting);
+            this.adapter.open();
+            this.setStatus(ConnectionStatus.Connected);
             return true;
         } catch (UnknownHostException e) {
             this.signal(new Signal(Signal.Type.UnknownHost, e.getMessage()));
@@ -95,37 +97,8 @@ public final class Networks extends Thread implements ISignalHandler {
         }
     }
 
-    @Override
-    public void run() {
-        log.info("Adapter thread starting");
-
-        while (this.keepRunning) {
-            try {
-                if (status == ConnectionStatus.Idle) {
-                    sleep(200); // TODO? optimize
-                    continue;
-                }
-                if (status == ConnectionStatus.Connecting) {
-                    log.info("Opening connection to: " + adapter.getHostString());
-                    adapter.open();
-                    log.fine("Connection opened");
-                    continue;
-                }
-
-                String message = this.adapter.receive();
-                if (!this.handler.handle(message)) {
-                    log.warning("Command " + message + " not handled");
-                    continue;
-                }
-                this.adapter.invalidCounterReset();
-            } catch (InterruptedException e) {
-                log.warning("Network: waiting interrupted");
-            } catch (IOException e) {
-                log.warning("TcpConnection error: " + e.toString());
-                this.signal(new Signal(Signal.Type.ConnectionReset));
-                this.adapter.close("Connection reset");
-            }
-        }
+    public synchronized String readLine() throws IOException{
+        return this.adapter.receive();
     }
 
     synchronized public void disconnect(String reason) {
@@ -133,18 +106,10 @@ public final class Networks extends Thread implements ISignalHandler {
     }
 
     public void shutdown() {
-        try {
-            this.disconnect("Shutting down");
-            this.keepRunning = false;
-            super.interrupt();
-            super.join();
-            log.info("NetWorks ended successfully");
-        } catch (InterruptedException ex) {
-            log.warning("Failed to close networks: " + ex.getClass().getSimpleName() + ": " + ex.getMessage());
-        }
+        this.disconnect("Shutting down");
     }
 
-    public void setHandler(INetworkProcessor handler) {
+    public void setHandler(ISignalHandler handler) {
         this.handler = handler;
     }
 

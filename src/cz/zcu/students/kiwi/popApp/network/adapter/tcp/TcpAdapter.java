@@ -1,9 +1,8 @@
-package cz.zcu.students.kiwi.network.adapter.tcp;
+package cz.zcu.students.kiwi.popApp.network.adapter.tcp;
 
-import cz.zcu.students.kiwi.network.adapter.AAdapter;
-import cz.zcu.students.kiwi.network.adapter.socket.SocketFactory;
-import cz.zcu.students.kiwi.network.handling.Signal;
-import cz.zcu.students.kiwi.popApp.pop3.Response;
+import cz.zcu.students.kiwi.popApp.network.adapter.AAdapter;
+import cz.zcu.students.kiwi.popApp.network.adapter.socket.SocketFactory;
+import cz.zcu.students.kiwi.popApp.network.handling.Signal;
 
 import java.io.IOException;
 import java.net.NoRouteToHostException;
@@ -32,31 +31,8 @@ public class TcpAdapter extends AAdapter {
     }
 
     @Override
-    protected String receiveMsg() throws IOException {
-        StringBuilder message = new StringBuilder();
-
-        String line;
-        int lines = 0;
-        do {
-            line = this.connection.receiveLine();
-            lines++;
-
-            if (line == null || line.length() == 0) {
-                throw new IOException("TcpConnection reset");
-            }
-
-            log.info("line: " + line +  "// (" + line.length() + ")");
-            message.append(line).append("\n");
-            if (lines == 1 && (line.equals(Response.Status.Ok.protocolRepresentation()) || line.equals(Response.Status.Err
-                    .protocolRepresentation()))) {
-                break;
-            }
-        } while (line.charAt(line.length() - 1) != '.');
-
-        log.info("message: " + message);
-
-
-        return message.toString();
+    protected String readLine() throws IOException {
+        return this.connection.readLine();
     }
 
     @Override

@@ -1,4 +1,4 @@
-package cz.zcu.students.kiwi.network.codec;
+package cz.zcu.students.kiwi.popApp.network.codec;
 
 public interface ICodec {
 

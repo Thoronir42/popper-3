@@ -1,6 +1,6 @@
 package cz.zcu.students.kiwi.popApp.jfx.login;
 
-import cz.zcu.students.kiwi.network.Networks;
+import cz.zcu.students.kiwi.popApp.network.NetworksSynchronous;
 import cz.zcu.students.kiwi.popApp.jfx.PopScene;
 import cz.zcu.students.kiwi.popApp.jfx.inputs.PortTextField;
 import javafx.application.Platform;
@@ -13,9 +13,9 @@ import javafx.scene.layout.GridPane;
 
 public class LoginScene extends PopScene<GridPane> {
 
-    private final Networks networks;
+    private final NetworksSynchronous networks;
 
-    public LoginScene(Networks networks, double width, double height) {
+    public LoginScene(NetworksSynchronous networks, double width, double height) {
         super(new GridPane(), width, height);
         this.networks = networks;
     }

@@ -1,4 +1,4 @@
-package cz.zcu.students.kiwi.network.adapter.socket;
+package cz.zcu.students.kiwi.popApp.network.adapter.socket;
 
 import javax.net.ssl.*;
 import java.io.FileInputStream;

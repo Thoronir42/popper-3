@@ -1,8 +1,8 @@
-package cz.zcu.students.kiwi.network.adapter;
+package cz.zcu.students.kiwi.popApp.network.adapter;
 
-import cz.zcu.students.kiwi.network.adapter.socket.SocketFactory;
-import cz.zcu.students.kiwi.network.handling.ISignalHandler;
-import cz.zcu.students.kiwi.network.handling.Signal;
+import cz.zcu.students.kiwi.popApp.network.adapter.socket.SocketFactory;
+import cz.zcu.students.kiwi.popApp.network.handling.ISignalHandler;
+import cz.zcu.students.kiwi.popApp.network.handling.Signal;
 
 import java.io.IOException;
 import java.net.UnknownHostException;
@@ -31,7 +31,7 @@ public abstract class AAdapter {
     public abstract void send(String message) throws IOException;
 
     public final String receive() throws IOException {
-        String msg = this.receiveMsg();
+        String msg = this.readLine();
         this.lastActive = System.currentTimeMillis();
         return msg;
     }
@@ -74,7 +74,7 @@ public abstract class AAdapter {
         this.signalHandler = signalHandler;
     }
 
-    protected abstract String receiveMsg() throws IOException;
+    protected abstract String readLine() throws IOException;
 
     protected void signal(Signal signal) {
         this.signalHandler.signal(signal);

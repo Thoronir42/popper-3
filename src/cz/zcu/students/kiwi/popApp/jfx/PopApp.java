@@ -1,16 +1,13 @@
 package cz.zcu.students.kiwi.popApp.jfx;
 
-import cz.zcu.students.kiwi.network.Networks;
-import cz.zcu.students.kiwi.network.adapter.socket.SslSocketFactory;
-import cz.zcu.students.kiwi.network.adapter.tcp.TcpAdapter;
-import cz.zcu.students.kiwi.network.adapter.tcp.TcpConnection;
-import cz.zcu.students.kiwi.network.codec.NoCodec;
-import cz.zcu.students.kiwi.network.handling.INetworkProcessor;
-import cz.zcu.students.kiwi.network.handling.Signal;
 import cz.zcu.students.kiwi.popApp.jfx.login.LoginScene;
 import cz.zcu.students.kiwi.popApp.jfx.runtime.RuntimeScene;
+import cz.zcu.students.kiwi.popApp.network.NetworksSynchronous;
+import cz.zcu.students.kiwi.popApp.network.adapter.tcp.TcpAdapter;
+import cz.zcu.students.kiwi.popApp.network.codec.NoCodec;
+import cz.zcu.students.kiwi.popApp.network.handling.ISignalHandler;
+import cz.zcu.students.kiwi.popApp.network.handling.Signal;
 import cz.zcu.students.kiwi.popApp.pop3.Response;
-import cz.zcu.students.kiwi.popApp.pop3.ResponseParser;
 import cz.zcu.students.kiwi.popApp.pop3.Session;
 import javafx.application.Application;
 import javafx.application.Platform;
@@ -18,16 +15,15 @@ import javafx.geometry.Rectangle2D;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
 
-import java.util.Arrays;
+import java.io.IOException;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class PopApp extends Application implements INetworkProcessor {
+public class PopApp extends Application implements ISignalHandler {
 
     private static Logger log = Logger.getLogger(Application.class.getSimpleName());
 
-    private final Networks networks;
-
-    ResponseParser parser;
+    private final NetworksSynchronous networks;
 
     private Stage primaryStage;
     private LoginScene loginScene;
@@ -36,9 +32,7 @@ public class PopApp extends Application implements INetworkProcessor {
     public PopApp() {
         super();
 
-        this.parser = new ResponseParser();
-
-        this.networks = new Networks(new TcpAdapter(), new NoCodec());
+        this.networks = new NetworksSynchronous(new TcpAdapter(), new NoCodec());
         this.networks.setHandler(this);
 
         this.networks.start();
@@ -63,24 +57,6 @@ public class PopApp extends Application implements INetworkProcessor {
     }
 
     @Override
-    public boolean handle(String message) {
-        Response response = this.parser.parse(message);
-
-        // fixme: woah, what an ugly synchronization solution >:O
-        while (this.runtimeScene == null) {
-            try {
-                Thread.sleep(100);
-            } catch (InterruptedException e) {
-                break;
-            }
-        }
-
-        this.runtimeScene.pushMessage(response);
-
-        return true;
-    }
-
-    @Override
     public void signal(Signal signal) {
         if (!Platform.isFxApplicationThread()) {
             Platform.runLater(() -> this.signal(signal));
@@ -93,16 +69,38 @@ public class PopApp extends Application implements INetworkProcessor {
             case ConnectionEstablished:
                 Session session = new Session(networks);
                 this.runtimeScene = new RuntimeScene(session, 1280, 960);
-                primaryStage.setScene(this.runtimeScene);
-                Platform.runLater(this::centerStage);
+                this.runtimeScene.setOnCommand(e -> {
+                    runtimeScene.push(e.getCommand());
+                    try {
+                        Response response = session.issueAndWait(e.getCommand());
+                        runtimeScene.push(response);
+                    } catch (IOException e1) {
+                        runtimeScene.push(e1);
+                    }
+
+                });
+
+                this.runtimeScene.setExitCallback(() -> this.setScene(this.loginScene));
+                this.setScene(this.runtimeScene);
+
+                try {
+                    this.runtimeScene.push(session.receive());
+                } catch (IOException e) {
+                    this.runtimeScene.push(e);
+                }
                 break;
+
             case ConnectionReset:
-                primaryStage.setScene(this.loginScene);
-                Platform.runLater(this::centerStage);
+                this.runtimeScene.sessionLost();
                 break;
 
         }
 
+    }
+
+    private void setScene(PopScene scene) {
+        primaryStage.setScene(scene);
+        Platform.runLater(this::centerStage);
     }
 
     private void centerStage() {

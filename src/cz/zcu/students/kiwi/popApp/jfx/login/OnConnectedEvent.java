@@ -1,6 +1,6 @@
 package cz.zcu.students.kiwi.popApp.jfx.login;
 
-import cz.zcu.students.kiwi.network.adapter.AAdapter;
+import cz.zcu.students.kiwi.popApp.network.adapter.AAdapter;
 import javafx.event.Event;
 import javafx.event.EventType;
 

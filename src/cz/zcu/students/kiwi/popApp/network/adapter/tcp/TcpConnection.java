@@ -1,6 +1,6 @@
-package cz.zcu.students.kiwi.network.adapter.tcp;
+package cz.zcu.students.kiwi.popApp.network.adapter.tcp;
 
-import cz.zcu.students.kiwi.network.adapter.socket.SocketFactory;
+import cz.zcu.students.kiwi.popApp.network.adapter.socket.SocketFactory;
 
 import java.io.*;
 import java.net.InetAddress;
@@ -58,9 +58,9 @@ public final class TcpConnection {
         this.writer.flush();
     }
 
-    public String receiveLine() throws IOException {
+    public String readLine() throws IOException {
         if (reader == null) {
-            throw new IOException("Failed to receiveLine message: TcpConnection is not open");
+            throw new IOException("Failed to readLine message: TcpConnection is not open");
         }
         String message = reader.readLine();
         if (message == null) {

@@ -1,4 +1,4 @@
-package cz.zcu.students.kiwi.network.handling;
+package cz.zcu.students.kiwi.popApp.network.handling;
 
 public interface ISignalHandler {
 	/**
