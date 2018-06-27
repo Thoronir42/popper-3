@@ -136,8 +136,8 @@ public class RuntimeScene extends PopScene<BorderPane> {
 
         CommandBox tab = new CommandBox("Authentication");
 
-        tab.addCommand("USER");
-        tab.addCommand("PASS");
+        tab.addCommand("USER", "USER user");
+        tab.addCommand("PASS", "PASS password");
         tab.addCommand("QUIT");
 
         return tab;
@@ -148,8 +148,9 @@ public class RuntimeScene extends PopScene<BorderPane> {
 
         tab.addCommand("STAT");
         tab.addCommand("LIST");
-        tab.addCommand("RETR");
-        tab.addCommand("DELE");
+        tab.addCommand("LIST", "LIST msgId");
+        tab.addCommand("RETR", "RETR msgId");
+        tab.addCommand("DELE", "DELE msgId");
         tab.addCommand("NOOP");
         tab.addCommand("RSET");
 
@@ -159,8 +160,8 @@ public class RuntimeScene extends PopScene<BorderPane> {
     private CommandBox buildTabOptional() {
         CommandBox tab = new CommandBox("Optional");
 
-        tab.addCommand("TOP");
-        tab.addCommand("UIDL");
+        tab.addCommand("TOP", "TOP msgId lines");
+        tab.addCommand("UIDL", "UIDL msgId");
 
         return tab;
     }

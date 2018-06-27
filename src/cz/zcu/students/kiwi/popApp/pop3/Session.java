@@ -68,6 +68,10 @@ public final class Session {
         return this.parser.parse(message.toString());
     }
 
+    public void close() {
+        this.networks.disconnect("Session closing");
+    }
+
     enum State {
         Authorization, Transaction, Update, Optional
     }

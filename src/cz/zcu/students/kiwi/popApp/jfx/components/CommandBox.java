@@ -16,7 +16,11 @@ public class CommandBox extends VBox {
     }
 
     public void addCommand(String command) {
-        Label lb = new Label(command);
+        this.addCommand(command, command);
+    }
+
+    public void addCommand(String command, String caption) {
+        Label lb = new Label(caption);
         lb.setOnMouseClicked(e -> this.select(command));
         this.commands.getChildren().add(lb);
     }
@@ -27,7 +31,7 @@ public class CommandBox extends VBox {
     }
 
     private void select(String command) {
-        if(this.onSelected != null) {
+        if (this.onSelected != null) {
             this.onSelected.handle(new CommandSelectedEvent(command));
         }
     }

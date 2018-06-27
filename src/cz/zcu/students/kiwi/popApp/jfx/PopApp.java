@@ -7,6 +7,7 @@ import cz.zcu.students.kiwi.popApp.network.adapter.tcp.TcpAdapter;
 import cz.zcu.students.kiwi.popApp.network.codec.NoCodec;
 import cz.zcu.students.kiwi.popApp.network.handling.ISignalHandler;
 import cz.zcu.students.kiwi.popApp.network.handling.Signal;
+import cz.zcu.students.kiwi.popApp.pop3.Command;
 import cz.zcu.students.kiwi.popApp.pop3.Response;
 import cz.zcu.students.kiwi.popApp.pop3.Session;
 import javafx.application.Application;
@@ -74,6 +75,9 @@ public class PopApp extends Application implements ISignalHandler {
                         Response response = session.issueAndWait(e.getCommand());
                         runtimeScene.push(e.getCommand());
                         runtimeScene.push(response);
+                        if(e.getCommand().getType() == Command.Type.QUIT) {
+                            session.close();
+                        }
                     } catch (IOException e1) {
                         runtimeScene.push(e1);
                     }
