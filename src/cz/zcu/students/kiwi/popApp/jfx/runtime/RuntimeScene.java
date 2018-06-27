@@ -60,7 +60,7 @@ public class RuntimeScene extends PopScene<BorderPane> {
         append("S", response.getRaw());
     }
     public void push(IOException e) {
-        append("E", e.toString());
+        append("E", e.getMessage());
     }
 
     protected void append(String author, String content) {

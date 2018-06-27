@@ -31,7 +31,7 @@ public class TcpAdapter extends AAdapter {
     }
 
     @Override
-    protected String readLine() throws IOException {
+    protected String getLine() throws IOException {
         return this.connection.readLine();
     }
 

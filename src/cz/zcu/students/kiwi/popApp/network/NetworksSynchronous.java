@@ -8,7 +8,6 @@ import cz.zcu.students.kiwi.popApp.network.codec.ICodec;
 import cz.zcu.students.kiwi.popApp.network.handling.ISignalHandler;
 import cz.zcu.students.kiwi.popApp.network.handling.Signal;
 import cz.zcu.students.kiwi.popApp.pop3.Command;
-import cz.zcu.students.kiwi.popApp.pop3.Response;
 
 import java.io.IOException;
 import java.net.UnknownHostException;
@@ -93,12 +92,23 @@ public final class NetworksSynchronous extends Thread implements ISignalHandler 
             return true;
         } catch (IOException e) {
             log.warning("Command send failed: " + e.toString());
+            this.disconnect("Send failed");
             return false;
         }
     }
 
-    public synchronized String readLine() throws IOException{
-        return this.adapter.receive();
+    public synchronized String readLine() throws IOException {
+        try {
+            String line = this.adapter.readLine();
+            if(line == null) {
+                throw new IOException("Connection reset");
+            }
+            log.info("Adapter read: " + line);
+            return line;
+        } catch (IOException e) {
+            this.disconnect(e.toString());
+            throw e;
+        }
     }
 
     synchronized public void disconnect(String reason) {

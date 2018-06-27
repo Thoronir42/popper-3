@@ -70,9 +70,9 @@ public class PopApp extends Application implements ISignalHandler {
                 Session session = new Session(networks);
                 this.runtimeScene = new RuntimeScene(session, 1280, 960);
                 this.runtimeScene.setOnCommand(e -> {
-                    runtimeScene.push(e.getCommand());
                     try {
                         Response response = session.issueAndWait(e.getCommand());
+                        runtimeScene.push(e.getCommand());
                         runtimeScene.push(response);
                     } catch (IOException e1) {
                         runtimeScene.push(e1);

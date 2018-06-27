@@ -30,8 +30,8 @@ public abstract class AAdapter {
 
     public abstract void send(String message) throws IOException;
 
-    public final String receive() throws IOException {
-        String msg = this.readLine();
+    public final String readLine() throws IOException {
+        String msg = this.getLine();
         this.lastActive = System.currentTimeMillis();
         return msg;
     }
@@ -74,7 +74,7 @@ public abstract class AAdapter {
         this.signalHandler = signalHandler;
     }
 
-    protected abstract String readLine() throws IOException;
+    protected abstract String getLine() throws IOException;
 
     protected void signal(Signal signal) {
         this.signalHandler.signal(signal);

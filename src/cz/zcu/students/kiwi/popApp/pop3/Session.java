@@ -20,6 +20,7 @@ public final class Session {
     }
 
     public void issue(Command command) {
+        log.info("Issuing command: " + command.toString());
         networks.send(command);
     }
 

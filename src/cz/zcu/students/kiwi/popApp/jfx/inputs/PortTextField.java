@@ -21,7 +21,6 @@ public class PortTextField extends TextField {
         int i = this.Port.get();
         if (i == -1 && tryPrompt) {
             i = Integer.parseInt(this.getPromptText());
-            System.out.println(i);
         }
         return i;
 	}
