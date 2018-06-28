@@ -1,6 +1,10 @@
 /out/
 *.class
 
+/doc/*
+!/doc/*.tex
+!/doc/img/
+
 # Mobile Tools for Java (J2ME)
 .mtj.tmp/
 
