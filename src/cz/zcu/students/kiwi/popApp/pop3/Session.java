@@ -27,6 +27,10 @@ public final class Session {
     public Response issueAndWait(Command command) throws IOException {
         this.issue(command);
 
+        return this.waitForResponse(command);
+    }
+
+    public Response waitForResponse(Command command) throws IOException {
         return command.expectsMultiLineResponse() ? this.receiveMultiLine() : this.receive();
     }
 

@@ -42,7 +42,11 @@ public class Command {
 
     @Override
     public String toString() {
-        return this.type.name() + (this.hasArgs() ? " " + String.join(" ", this.args) : "");
+        String argsStr = "";
+        if(this.hasArgs()) {
+            argsStr = (this.type == Type.PASS) ? " ****" : " " + String.join(" ", this.args);
+        }
+        return this.type.name() + argsStr;
     }
 
     public enum Type {
