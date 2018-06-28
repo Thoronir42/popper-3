@@ -42,6 +42,9 @@ public class RuntimeScene extends PopScene<BorderPane> {
         this.exitCallback = exitCallback;
     }
 
+    public void setPromptDisable(boolean value) {
+        this.commandPrompt.setDisable(value);
+    }
 
     public void sessionLost() {
         Button exitButton = new Button("Session terminated, Exit?");

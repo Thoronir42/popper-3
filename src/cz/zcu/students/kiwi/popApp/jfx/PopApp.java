@@ -71,6 +71,7 @@ public class PopApp extends Application implements ISignalHandler {
                 Session session = new Session(networks);
                 this.runtimeScene = new RuntimeScene(session, 1280, 960);
                 this.runtimeScene.setOnCommand(e -> {
+                    this.runtimeScene.setPromptDisable(true);
                     try {
                         Response response = session.issueAndWait(e.getCommand());
                         runtimeScene.push(e.getCommand());
@@ -80,6 +81,8 @@ public class PopApp extends Application implements ISignalHandler {
                         }
                     } catch (IOException e1) {
                         runtimeScene.push(e1);
+                    } finally {
+                        this.runtimeScene.setPromptDisable(false);
                     }
 
                 });
