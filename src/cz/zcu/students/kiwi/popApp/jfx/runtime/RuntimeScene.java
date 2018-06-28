@@ -78,13 +78,12 @@ public class RuntimeScene extends PopScene<BorderPane> {
 
     @Override
     protected void build(BorderPane root) {
+        root.setPadding(new Insets(16));
         this.commandPrompt = new CommandPrompt();
-        commandPrompt.setOnCommand(event -> {
-            this.onCommand.handle(event);
-        });
+        commandPrompt.setOnCommand(event -> this.onCommand.handle(event));
 
         root.setBottom(commandPrompt);
-        commandPrompt.prefWidthProperty().setValue(360);
+//        commandPrompt.prefWidthProperty().setValue(240);
 //        commandPrompt.prefWidthProperty().bind(this.widthProperty().add(-260));
 
         root.setCenter(buildCenter());
@@ -96,14 +95,16 @@ public class RuntimeScene extends PopScene<BorderPane> {
         root.prefWidthProperty().bind(this.widthProperty());
 
         ScrollPane commandHints = buildHintTabs();
-        commandHints.prefWidthProperty().bind(root.widthProperty().multiply(0.3));
+        commandHints.setPrefWidth(260);
         root.setLeft(commandHints);
 
         this.textAreaLog = new TextArea();
         this.textAreaLog.setEditable(false);
         DoubleBinding width = root.widthProperty().add(commandHints.widthProperty().multiply(-1));
         this.textAreaLog.prefWidthProperty().bind(width);
-        root.setRight(this.textAreaLog);
+        this.textAreaLog.prefHeightProperty().bind(root.heightProperty().add(this.commandPrompt.heightProperty()));
+
+        root.setCenter(this.textAreaLog);
 
         return root;
     }

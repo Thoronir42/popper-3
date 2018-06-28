@@ -11,7 +11,9 @@ public class CommandBox extends VBox {
     private final VBox commands;
 
     public CommandBox(String caption) {
-        this.getChildren().add(new Label(caption));
+        Label label = new Label(caption);
+        label.setStyle("-fx-font-weight: bold");
+        this.getChildren().add(label);
         this.getChildren().add(this.commands = new VBox());
     }
 

@@ -2,7 +2,6 @@ package cz.zcu.students.kiwi.popApp.jfx.inputs;
 
 import cz.zcu.students.kiwi.popApp.pop3.Command;
 import javafx.event.EventHandler;
-import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
